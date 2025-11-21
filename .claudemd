@@ -1,0 +1,301 @@
+# IQTIG Forms WordPress Plugin
+
+## Project Overview
+IQTIG Forms is a WordPress plugin providing two customizable Gutenberg blocks (Login Form and Unsubscribe Form) with cookie persistence for external service integration. Forms save user input to cookies and redirect users after validation, enabling seamless handoff to external services on the same domain.
+
+**Key Features:**
+- Two custom blocks: Login Form and Unsubscribe Form
+- Dynamic field management (text, textarea, checkbox, radio, select)
+- Required field validation
+- Cookie-based data persistence (30-day lifespan, site-wide path)
+- Redirect on successful validation (no form submission)
+- WCAG 2.2 and BITV accessibility compliance
+- Translation-ready (English default, German support)
+
+## Tech Stack
+
+### Backend
+- **Language:** PHP 7.4+
+- **Framework:** WordPress 6.0+
+- **Architecture:** Procedural (NO OOP), with namespacing
+- **Standards:** WordPress VIP Coding Standards
+- **Quality Tools:** PHPStan (level 8), PHPCS (VIP Go ruleset)
+
+### Frontend
+- **Build Tool:** @wordpress/scripts (webpack, Babel, PostCSS)
+- **JavaScript:** ES6+ with WordPress components
+- **CSS:** PostCSS with autoprefixer and cssnano
+- **Quality Tools:** ESLint (WordPress standards)
+- **Accessibility:** WCAG 2.2 AA, BITV compliance
+
+### Dependencies
+- **npm:** @wordpress/blocks, @wordpress/block-editor, @wordpress/components, @wordpress/i18n
+- **Composer:** automattic/vipwpcs, phpstan/phpstan, szepeviktor/phpstan-wordpress
+
+## Project Structure
+```
+iqtig-plugin/
+├── iqtig-forms.php              # Main plugin file
+├── README.md                     # Documentation
+├── .gitignore                    # Git ignore rules
+├── .eslintrc.js                  # ESLint config
+├── .phpcs.xml.dist               # PHPCS config (VIP)
+├── phpstan.neon                  # PHPStan config (level 8)
+├── phpstan-bootstrap.php         # PHPStan WordPress constants
+├── postcss.config.js             # PostCSS config
+├── package.json                  # npm dependencies
+├── composer.json                 # PHP dev dependencies
+├── webpack.config.js             # Webpack overrides
+│
+├── languages/                    # Translation files
+│   └── iqtig-forms.pot          # Translation template
+│
+├── includes/                     # PHP functionality
+│   ├── activation.php           # Plugin activation
+│   ├── deactivation.php         # Plugin deactivation
+│   ├── blocks.php               # Block registration
+│   ├── assets.php               # Asset enqueuing
+│   ├── cookie-handler.php       # Cookie management
+│   └── ajax-handler.php         # REST API endpoints
+│
+├── src/                          # Shared JavaScript
+│   ├── utils/
+│   │   ├── validation.js        # Validation functions
+│   │   ├── cookie-manager.js    # Cookie utilities
+│   │   └── accessibility.js     # A11y helpers
+│   └── components/
+│       └── FormField.js         # Reusable field component
+│
+├── blocks/                       # Gutenberg blocks
+│   ├── login-form/
+│   │   ├── block.json           # Block metadata
+│   │   ├── index.js             # Block registration
+│   │   ├── edit.js              # Editor component
+│   │   ├── save.js              # Frontend markup
+│   │   ├── view.js              # Frontend JavaScript
+│   │   ├── style.scss           # Frontend styles
+│   │   └── editor.scss          # Editor styles
+│   │
+│   └── unsubscribe-form/
+│       └── [Same structure as login-form]
+│
+├── assets/                       # Frontend assets
+│   ├── js/
+│   └── css/
+│
+└── build/                        # Compiled assets (gitignored)
+```
+
+## Development Guidelines
+
+### Code Standards
+
+**PHP:**
+- Use `namespace IQTIG_Forms;` for all PHP files
+- NO OOP - procedural functions only
+- NO PSR4 autoloading - use `require_once`
+- Follow WordPress VIP Go coding standards
+- All strings must use `__()` or `esc_html__()` with 'iqtig-forms' text domain
+- Escape all output, sanitize all input
+- Use WordPress functions over PHP equivalents (wp_json_encode vs json_encode)
+
+**JavaScript:**
+- Use WordPress components (@wordpress/blocks, @wordpress/block-editor)
+- Use `__()` from @wordpress/i18n for all translatable strings
+- Follow WordPress JavaScript coding standards
+- No console.log in production code
+
+**CSS:**
+- Use PostCSS (no SASS/LESS)
+- Mobile-first responsive design
+- WCAG 2.2 color contrast (4.5:1 minimum)
+- Focus states: 2px solid outline
+- Support dark mode, high contrast, reduced motion
+
+### Accessibility Requirements (CRITICAL)
+- All form fields must have associated `<label>` elements
+- Required fields: `aria-required="true"` + visual indicator (*)
+- Error messages: `aria-describedby` linking to error element
+- Forms: `role="form"`, `aria-labelledby`
+- ARIA live regions for dynamic error announcements
+- Keyboard navigation: Tab, Enter, Space
+- Focus management on validation errors
+- Screen reader tested
+
+### Cookie Implementation
+- Key format: `iqtig_form_{formId}_{fieldName}`
+- Value: JSON encoded
+- Expiration: 30 days (`time() + 86400 * 30`)
+- Path: `/` (entire site)
+- SameSite: `Lax`
+- Secure: true (if HTTPS)
+- HttpOnly: false (JavaScript needs access)
+
+### Git Workflow
+- **CRITICAL:** NO Claude attribution in commits or code
+- Keep commits atomic and descriptive
+- Branch naming: feature/*, bugfix/*, release/*
+- When plugin is complete, push to GitHub repository (create if doesn't exist)
+
+## Common Tasks
+
+### Initial Setup
+```bash
+# Install PHP dependencies
+composer install
+
+# Install JavaScript dependencies
+npm install
+```
+
+### Development
+```bash
+# Start development server (watch mode)
+npm start
+
+# Build for production
+npm run build
+
+# Lint all code
+npm run lint
+
+# Lint JavaScript only
+npm run lint:js
+
+# Lint CSS only
+npm run lint:css
+
+# Lint PHP only
+npm run lint:php
+
+# Format JavaScript
+npm run format:js
+```
+
+### Testing & Quality Assurance
+```bash
+# Run PHPStan (level 8)
+npm run test:php
+# OR
+composer run-script phpstan
+
+# Run PHPCS (VIP standards)
+composer run-script phpcs
+
+# Auto-fix PHPCS issues
+composer run-script phpcbf
+
+# Run accessibility tests
+npm run test:a11y
+```
+
+### Internationalization
+```bash
+# Generate .pot file for translations
+npm run pot
+```
+
+### Build & Deploy
+```bash
+# Build production assets
+npm run build
+
+# Create plugin ZIP for distribution
+npm run plugin-zip
+
+# Push to GitHub (after completion)
+git add .
+git commit -m "Release version X.X.X"
+git push origin main
+```
+
+## Important Notes
+
+### Cookie Behavior
+- Cookies are set on EVERY field change (auto-save)
+- Cookies persist for 30 days site-wide
+- External services on same domain can read these cookies
+- Cookie keys include formId to support multiple forms
+
+### Form Submission Flow
+1. User fills fields → Auto-saved to cookies
+2. User clicks submit → Client-side validation
+3. If invalid → Show accessible errors, focus first error
+4. If valid → Redirect to configured URL (NO server submission)
+5. External service reads cookies from redirect URL
+
+### Field Types Supported
+- Text field (`<input type="text">`)
+- Textarea (`<textarea>`)
+- Checkbox (`<input type="checkbox">`) - single or group
+- Radio buttons (`<input type="radio">`) - group
+- Select dropdown (`<select><option>`)
+
+**NOT Supported:** File upload, date pickers, or other advanced fields
+
+### Block Settings
+Each block has settings panel with:
+- **Domain** (string) - Maps to external service domain
+- **ID** (string) - Form identifier for cookie keys
+- **Redirect URL** (string) - Where to send user after validation
+- **Fields** (array) - Dynamic field configuration
+
+### Security Considerations
+- All input sanitized with `sanitize_text_field()` or `sanitize_email()`
+- All output escaped with `esc_html()` or `esc_attr()`
+- REST API endpoints use nonce verification
+- Cookie values JSON encoded to prevent injection
+- No file uploads to avoid security risks
+
+### Browser Support
+- Modern browsers (Chrome, Firefox, Safari, Edge)
+- Mobile responsive (iOS Safari, Chrome Mobile)
+- Progressive enhancement approach
+
+## Troubleshooting
+
+### Build Errors
+```bash
+# Clear node_modules and reinstall
+rm -rf node_modules package-lock.json
+npm install
+
+# Clear build directory
+rm -rf build
+npm run build
+```
+
+### PHPCS Errors
+```bash
+# Auto-fix what's possible
+composer run-script phpcbf
+
+# Check specific file
+./vendor/bin/phpcs includes/blocks.php
+```
+
+### PHPStan Errors
+```bash
+# Run with verbose output
+./vendor/bin/phpstan analyse --level 8 -v
+```
+
+## External Resources
+
+### WordPress Documentation
+- [Block Editor Handbook](https://developer.wordpress.org/block-editor/)
+- [@wordpress/scripts](https://developer.wordpress.org/block-editor/reference-guides/packages/packages-scripts/)
+- [WordPress VIP Code Standards](https://docs.wpvip.com/technical-references/vip-code-analysis-bot/phpcs-report/)
+
+### Accessibility
+- [WCAG 2.2 Guidelines](https://www.w3.org/WAI/WCAG22/quickref/)
+- [BITV Standards](https://www.bitvtest.de/) (German)
+- [ARIA Authoring Practices](https://www.w3.org/WAI/ARIA/apg/)
+
+### Tools
+- [PHPStan](https://phpstan.org/user-guide/getting-started)
+- [PostCSS](https://postcss.org/)
+- [ESLint WordPress](https://www.npmjs.com/package/@wordpress/eslint-plugin)
+
+## GitHub Repository
+When plugin development is complete, ensure it's pushed to a GitHub repository. If repository doesn't exist, create one first with proper .gitignore and README.

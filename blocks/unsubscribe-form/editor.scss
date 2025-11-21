@@ -1,0 +1,214 @@
+/**
+ * Unsubscribe Form Block Editor Styles
+ *
+ * @package IQTIGForms
+ */
+
+.iqtig-forms-editor {
+	padding: 1.5rem;
+	background-color: #f0f0f0;
+	border: 1px solid #dcdcdc;
+	border-radius: 4px;
+
+	h3 {
+		margin-top: 0;
+		margin-bottom: 1.5rem;
+		font-size: 1.5rem;
+		color: #1e1e1e;
+	}
+
+	h4 {
+		margin-top: 1.5rem;
+		margin-bottom: 1rem;
+		font-size: 1.125rem;
+		color: #1e1e1e;
+	}
+
+	h5 {
+		margin-top: 1rem;
+		margin-bottom: 0.5rem;
+		font-size: 1rem;
+		font-weight: 600;
+		color: #1e1e1e;
+	}
+}
+
+.iqtig-forms-fields-manager {
+	margin-bottom: 2rem;
+}
+
+.iqtig-forms-no-fields {
+	padding: 2rem;
+	text-align: center;
+	background-color: #fff;
+	border: 2px dashed #dcdcdc;
+	border-radius: 4px;
+	color: #757575;
+	font-style: italic;
+	margin-bottom: 1rem;
+}
+
+.iqtig-forms-field-editor {
+	background-color: #fff;
+	border: 1px solid #dcdcdc;
+	border-radius: 4px;
+	padding: 1rem;
+	margin-bottom: 1rem;
+
+	.components-base-control {
+		margin-bottom: 1rem;
+
+		&:last-child {
+			margin-bottom: 0;
+		}
+	}
+}
+
+.iqtig-forms-field-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 1rem;
+	padding-bottom: 0.75rem;
+	border-bottom: 1px solid #dcdcdc;
+}
+
+.iqtig-forms-field-number {
+	font-weight: 600;
+	font-size: 1.125rem;
+	color: #2271b1;
+}
+
+.iqtig-forms-field-controls {
+	display: flex;
+	gap: 0.5rem;
+
+	.components-button {
+		&:focus {
+			box-shadow: 0 0 0 2px #2271b1;
+			outline: 2px solid transparent;
+		}
+	}
+}
+
+.iqtig-forms-field-options {
+	margin-top: 1rem;
+	padding-top: 1rem;
+	border-top: 1px solid #f0f0f0;
+}
+
+.iqtig-forms-option-editor {
+	background-color: #f9f9f9;
+	padding: 0.75rem;
+	margin-bottom: 0.75rem;
+	border-radius: 4px;
+	border: 1px solid #e0e0e0;
+
+	.components-base-control {
+		margin-bottom: 0.5rem;
+
+		&:last-of-type {
+			margin-bottom: 0.5rem;
+		}
+	}
+
+	.components-button {
+		margin-top: 0.5rem;
+	}
+}
+
+.iqtig-forms-preview {
+	background-color: #fff;
+	padding: 1.5rem;
+	border: 1px solid #dcdcdc;
+	border-radius: 4px;
+	margin-top: 2rem;
+
+	h4 {
+		margin-top: 0;
+	}
+}
+
+.iqtig-forms-preview-fields {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+}
+
+.iqtig-forms-preview-field {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+
+	label {
+		font-weight: 600;
+		color: #1e1e1e;
+	}
+
+	input[type="text"],
+	textarea,
+	select {
+		padding: 0.5rem;
+		border: 1px solid #8c8f94;
+		border-radius: 4px;
+		background-color: #f0f0f0;
+		cursor: not-allowed;
+	}
+
+	textarea {
+		min-height: 80px;
+		resize: vertical;
+	}
+
+	input[type="checkbox"],
+	input[type="radio"] {
+		cursor: not-allowed;
+		margin-right: 0.5rem;
+	}
+
+	div {
+		display: flex;
+		align-items: center;
+		margin-bottom: 0.25rem;
+
+		span {
+			color: #1e1e1e;
+		}
+	}
+}
+
+/* Drag and Drop Styles */
+.iqtig-forms-field-editor.is-dragging {
+	opacity: 0.5;
+	background-color: #e0e0e0;
+}
+
+/* Responsive Editor Styles */
+@media screen and (max-width: 782px) {
+	.iqtig-forms-editor {
+		padding: 1rem;
+	}
+
+	.iqtig-forms-field-header {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 0.5rem;
+	}
+
+	.iqtig-forms-field-controls {
+		width: 100%;
+		justify-content: flex-end;
+	}
+}
+
+/* Focus Styles for Accessibility */
+.iqtig-forms-editor {
+	.components-button:focus,
+	.components-text-control__input:focus,
+	.components-select-control__input:focus,
+	.components-toggle-control__input:focus {
+		box-shadow: 0 0 0 2px #2271b1;
+		outline: 2px solid transparent;
+		outline-offset: 2px;
+	}
+}

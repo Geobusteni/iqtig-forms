@@ -1,0 +1,5 @@
+# Login form block files will be placed here
+# - index.js (block registration and editor)
+# - block.json (block metadata)
+# - style.css (frontend styles)
+# - editor.css (editor styles)

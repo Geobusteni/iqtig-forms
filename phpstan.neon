@@ -1,0 +1,14 @@
+parameters:
+	level: 8
+	paths:
+		- iqtig-forms.php
+		- includes
+	excludePaths:
+		- vendor
+		- node_modules
+		- build
+	bootstrapFiles:
+		- phpstan-bootstrap.php
+	ignoreErrors:
+		# WordPress functions are not in scope
+		- '#Function (__|esc_html__|esc_attr__|esc_url|wp_enqueue_script|wp_enqueue_style|register_block_type|add_action|add_filter|plugin_dir_path|plugin_dir_url|register_activation_hook|register_deactivation_hook|load_plugin_textdomain|wp_verify_nonce|wp_send_json_success|wp_send_json_error|sanitize_text_field|sanitize_email|is_email|wp_json_encode|register_rest_route|rest_ensure_response|current_user_can|WP_Error|get_option|update_option|delete_option) not found.#'

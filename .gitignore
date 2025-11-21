@@ -1,0 +1,46 @@
+# WordPress
+wp-config.php
+wp-content/advanced-cache.php
+wp-content/backup-db/
+wp-content/backups/
+wp-content/blogs.dir/
+wp-content/cache/
+wp-content/upgrade/
+wp-content/uploads/
+wp-content/mu-plugins/
+wp-content/wp-cache-config.php
+
+# Dependencies
+/vendor/
+/node_modules/
+
+# Build files
+/build/
+*.map
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs
+*.log
+npm-debug.log*
+error_log
+
+# Environment
+.env
+.env.local
+
+# Composer
+composer.lock
+
+# Package manager
+package-lock.json
+yarn.lock
+
+# PHPStan
+.phpstan.cache/

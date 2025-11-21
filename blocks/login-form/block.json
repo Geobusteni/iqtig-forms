@@ -1,0 +1,41 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "iqtig-forms/login-form",
+	"version": "1.0.0",
+	"title": "IQTIG Login Form",
+	"category": "widgets",
+	"description": "A customizable login form with cookie-based field storage",
+	"keywords": [
+		"login",
+		"form",
+		"authentication"
+	],
+	"attributes": {
+		"domain": {
+			"type": "string",
+			"default": ""
+		},
+		"formId": {
+			"type": "string",
+			"default": ""
+		},
+		"redirectUrl": {
+			"type": "string",
+			"default": ""
+		},
+		"fields": {
+			"type": "array",
+			"default": []
+		}
+	},
+	"supports": {
+		"html": false,
+		"align": true
+	},
+	"textdomain": "iqtig-forms",
+	"editorScript": "file:./index.js",
+	"style": "file:./style-index.css",
+	"editorStyle": "file:./index.css",
+	"viewScript": "file:./view.js"
+}

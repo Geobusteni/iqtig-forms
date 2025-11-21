@@ -1,0 +1,41 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "iqtig-forms/unsubscribe-form",
+	"version": "1.0.0",
+	"title": "IQTIG Unsubscribe Form",
+	"category": "widgets",
+	"description": "A customizable unsubscribe form with cookie-based field storage",
+	"keywords": [
+		"unsubscribe",
+		"form",
+		"opt-out"
+	],
+	"attributes": {
+		"domain": {
+			"type": "string",
+			"default": ""
+		},
+		"formId": {
+			"type": "string",
+			"default": ""
+		},
+		"redirectUrl": {
+			"type": "string",
+			"default": ""
+		},
+		"fields": {
+			"type": "array",
+			"default": []
+		}
+	},
+	"supports": {
+		"html": false,
+		"align": true
+	},
+	"textdomain": "iqtig-forms",
+	"editorScript": "file:./index.js",
+	"style": "file:./style-index.css",
+	"editorStyle": "file:./index.css",
+	"viewScript": "file:./view.js"
+}

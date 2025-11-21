@@ -1,0 +1,35 @@
+{
+	"name": "iqtig-forms",
+	"version": "1.0.0",
+	"description": "Custom forms plugin for IQTIG WordPress site",
+	"private": true,
+	"scripts": {
+		"build": "wp-scripts build",
+		"start": "wp-scripts start",
+		"lint:js": "wp-scripts lint-js",
+		"lint:css": "wp-scripts lint-style",
+		"format:js": "wp-scripts format",
+		"packages-update": "wp-scripts packages-update"
+	},
+	"keywords": [
+		"wordpress",
+		"forms",
+		"gutenberg",
+		"blocks"
+	],
+	"author": "",
+	"license": "GPL-2.0-or-later",
+	"devDependencies": {
+		"@wordpress/scripts": "^27.0.0",
+		"autoprefixer": "^10.4.16",
+		"cssnano": "^6.0.1",
+		"postcss": "^8.4.32"
+	},
+	"dependencies": {
+		"@wordpress/block-editor": "^12.0.0",
+		"@wordpress/blocks": "^12.0.0",
+		"@wordpress/components": "^25.0.0",
+		"@wordpress/element": "^5.0.0",
+		"@wordpress/i18n": "^4.0.0"
+	}
+}
