@@ -116,6 +116,13 @@ iqtig-plugin/
 - Follow WordPress JavaScript coding standards
 - No console.log in production code
 
+**Gutenberg Block Development (CRITICAL):**
+- ALWAYS use JSX syntax, NEVER use createElement()
+- Reference the [WordPress Block Editor Handbook](https://developer.wordpress.org/block-editor/)
+- Use @wordpress/components for UI elements (Button, TextControl, ToggleControl, etc.)
+- Use @wordpress/block-editor for block-specific components (InspectorControls, useBlockProps)
+- Use Fragment shorthand `<>...</>` instead of importing Fragment
+
 **CSS:**
 - Use PostCSS (no SASS/LESS)
 - Mobile-first responsive design

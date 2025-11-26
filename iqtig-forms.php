@@ -3,7 +3,7 @@
  * Plugin Name: IQTIG Forms
  * Plugin URI: https://iqtig.org
  * Description: Custom forms plugin for IQTIG WordPress site with login and unsubscribe functionality
- * Version: 1.1.0
+ * Version: 1.1.1
  * Requires at least: 6.0
  * Requires PHP: 7.4
  * Author: IQTIG
@@ -24,7 +24,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Define plugin constants.
-define( 'IQTIG_FORMS_VERSION', '1.1.0' );
+define( 'IQTIG_FORMS_VERSION', '1.1.1' );
 define( 'IQTIG_FORMS_PATH', plugin_dir_path( __FILE__ ) );
 define( 'IQTIG_FORMS_URL', plugin_dir_url( __FILE__ ) );
 
