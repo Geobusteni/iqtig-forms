@@ -4,6 +4,7 @@
  * @package IQTIGForms
  */
 
+import { __ } from '@wordpress/i18n';
 import { setFormData, getFormData } from '../../src/utils/cookie-manager';
 import { validateAllFields } from '../../src/utils/validation';
 import {
@@ -11,6 +12,17 @@ import {
 	focusFirstError,
 	setupKeyboardNavigation,
 } from '../../src/utils/accessibility';
+
+/**
+ * Helper function to get URL parameter value
+ *
+ * @param {string} param - Parameter name to retrieve
+ * @return {string} Parameter value or empty string
+ */
+const getUrlParam = ( param ) => {
+	const urlParams = new URLSearchParams( window.location.search );
+	return urlParams.get( param ) || '';
+};
 
 document.addEventListener( 'DOMContentLoaded', () => {
 	const forms = document.querySelectorAll( '.wp-block-iqtig-forms-unsubscribe-form' );
@@ -128,8 +140,31 @@ document.addEventListener( 'DOMContentLoaded', () => {
 		const handleSubmit = ( event ) => {
 			event.preventDefault();
 
+			// Resolve Survey ID with priority: URL parameter > block setting > global default
+			let resolvedSurveyId = '';
+			const useUrlSurveyId = formElement.dataset.useUrlSurveyId === 'true';
+
+			if ( useUrlSurveyId ) {
+				resolvedSurveyId = getUrlParam( 'surveyId' );
+			}
+
+			if ( ! resolvedSurveyId ) {
+				resolvedSurveyId = formElement.dataset.surveyId || '';
+			}
+
+			if ( ! resolvedSurveyId ) {
+				resolvedSurveyId = formElement.dataset.defaultSurveyId || '';
+			}
+
+			if ( ! resolvedSurveyId ) {
+				displayErrors( { general: __( 'Survey ID is required', 'iqtig-forms' ) } );
+				return;
+			}
+
 			// Collect all field data
 			const formFields = [];
+			const formData = {};
+
 			fields.forEach( ( field ) => {
 				let fieldValue;
 				if ( field.type === 'checkbox' ) {
@@ -154,11 +189,13 @@ document.addEventListener( 'DOMContentLoaded', () => {
 							`[name="${ field.name }"]`
 						);
 						const checkedRadio = Array.from( radioGroup ).find( ( r ) => r.checked );
+						const radioValue = checkedRadio ? checkedRadio.value : '';
 						formFields.push( {
 							name: field.name,
-							value: checkedRadio ? checkedRadio.value : '',
+							value: radioValue,
 							required: isRequired,
 						} );
+						formData[ field.name ] = radioValue;
 					}
 				} else {
 					formFields.push( {
@@ -166,6 +203,7 @@ document.addEventListener( 'DOMContentLoaded', () => {
 						value: fieldValue,
 						required: isRequired,
 					} );
+					formData[ field.name ] = fieldValue;
 				}
 			} );
 
@@ -180,12 +218,61 @@ document.addEventListener( 'DOMContentLoaded', () => {
 			// Clear errors if validation passes
 			clearErrors();
 
-			// Redirect if URL is provided
-			if ( redirectUrl ) {
-				window.location.href = redirectUrl;
-			} else {
-				announceError( 'Unsubscribe request submitted successfully!' );
-			}
+			// Add loading state
+			const submitButton = formElement.querySelector( '.iqtig-forms-submit' );
+			const originalButtonText = submitButton.textContent;
+			submitButton.disabled = true;
+			submitButton.setAttribute( 'aria-busy', 'true' );
+			submitButton.textContent = __( 'Submitting...', 'iqtig-forms' );
+
+			// Announce loading state for screen readers
+			announceError( __( 'Submitting form, please wait...', 'iqtig-forms' ) );
+
+			// Prepare API request data
+			const requestData = {
+				...formData,
+				surveyId: resolvedSurveyId,
+				useGlobalRedirect: formElement.dataset.useGlobalRedirect === 'true',
+				redirectUrl: formElement.dataset.redirectUrl || '',
+			};
+
+			// Submit to API
+			fetch( formElement.dataset.apiUrl + 'iqtig-forms/v1/unsubscribe', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'X-WP-Nonce': formElement.dataset.nonce,
+				},
+				body: JSON.stringify( requestData ),
+			} )
+				.then( ( response ) => response.json() )
+				.then( ( data ) => {
+					if ( data.success && data.redirect_url ) {
+						// Announce success for screen readers
+						announceError( __( 'Unsubscribe successful, redirecting...', 'iqtig-forms' ) );
+						// Redirect to the URL provided by the API
+						window.location.href = data.redirect_url;
+					} else {
+						// Handle error response
+						const errorMessage = data.message || __( 'An error occurred during unsubscribe. Please try again.', 'iqtig-forms' );
+						displayErrors( { general: errorMessage } );
+
+						// Reset button state
+						submitButton.disabled = false;
+						submitButton.setAttribute( 'aria-busy', 'false' );
+						submitButton.textContent = originalButtonText;
+					}
+				} )
+				.catch( ( error ) => {
+					// Handle network or other errors
+					const errorMessage = __( 'Network error. Please check your connection and try again.', 'iqtig-forms' );
+					displayErrors( { general: errorMessage } );
+
+					// Reset button state
+					submitButton.disabled = false;
+					submitButton.setAttribute( 'aria-busy', 'false' );
+					submitButton.textContent = originalButtonText;
+				} );
 		};
 
 		// Submit button click handler

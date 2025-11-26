@@ -48,6 +48,20 @@ function activate_plugin() {
 		update_option( 'iqtig_forms_options', $default_options );
 	}
 
+	// Initialize default settings if they don't exist.
+	$default_settings = array(
+		'api_base_url'              => 'https://api.iqtig.org',
+		'jwt_cookie_lifetime'       => 14400,
+		'login_redirect_url'        => '',
+		'unsubscribe_redirect_url'  => '',
+		'default_survey_id'         => '',
+		'use_default_survey_id'     => false,
+	);
+
+	if ( ! get_option( 'iqtig_forms_settings' ) ) {
+		add_option( 'iqtig_forms_settings', $default_settings );
+	}
+
 	// Flush rewrite rules to ensure REST API endpoints are available.
 	flush_rewrite_rules();
 }

@@ -1,0 +1,249 @@
+IQTIG - Mediakom - ReliefApplications API Documentation
+Introduction
+This document describes how the communication between Health Patient Survey Web Portal, made by Relief Applications, will communicate with the Survey Form, made by Mediakom.        
+
+
+It includes the general navigation flows and the API documentation.
+
+
+
+
+Introduction        1
+Navigation Flow        2
+Survey Access API        6
+Overview        6
+Conventions        6
+POST /auth/login        7
+POST /survey/getInfos        9
+POST /survey/unsubscribe        11
+.
+________________
+
+
+Navigation Flow
+The communication between the Patient Health Portal and Mediakom will be based on two distincts flow:
+
+
+* Login and redirection to the survey which are connected together
+* Unsubscribing from notifications.
+
+
+This API and flow has been conceived with the idea to add other surveys to the platforms in the future and keep Mediakom survey and our platform frontend as independent as possible.
+
+
+This approach assumes that the form and the login page will be hosted under the same domain.
+
+
+To prevent spam and automated bots, we’ll implement limits on form submissions and redirects, along with the latest invisible Google reCAPTCHA for added security.
+
+
+About the Accessibility features
+
+
+The Contrast Mode and the font size will be saved in the domain cookies and shared and updated between the login portal and the survey.
+
+
+        
+Field
+	Type
+	Description
+	contrastMode
+	string
+	User’s preferred contrast mode: "Dark" or "Light".
+	fontSize
+	number
+	User’s preferred font size in pixels or points.
+	Login and Survey Redirection Flow
+  
+
+Login
+* To secure the logins, we'll first do a call that generates a JSON Web Token that will have a defined lifetime. This token will permit identifying the user without passing the login ids through the redirect UsRL.
+* The login calls will return a status code depending on different Edges cases.
+* If a user logs on a survey with the login from another survey, he will be redirected to the right survey after login.
+Redirect
+* The Redirection will go to a specified URL for the survey.
+* If the JWT token is invalid or expired, Mediakom will redirect the user to a “Session Expired Page” with a neutral login so the user can log back into his survey where he stopped.
+________________
+Unsubscribe Flow
+  
+Unsubscribe call
+* We call the unsubscribe endpoint with the surveyID.
+________________
+Survey Access API
+Overview
+This API controls access to user-specific surveys, handles opt-out from notifications, and coordinates secure redirects into a survey session.
+
+
+There are three main flows:
+
+
+   1. Login
+
+
+   * Client sends user credentials + survey name.
+   * Server authenticates and issues a survey-scoped JWT.
+
+
+   2. Redirect to survey
+
+
+   * Client calls redirect to the URL for the survey within the same domain.
+
+
+
+
+   3. Unsubscribe from notifications
+
+
+   * Patients can request to stop receiving reminders/notifications about a survey, without being authenticated.
+
+
+________________
+
+
+Conventions
+Base URL
+TBD with Mediakom/IQTIG: https://api.iqtig.org
+Authentication
+   * The API uses Bearer JWTs, but only for some endpoints.
+   * The JWT:
+   * Is valid for 4 hours.
+   * Must be sent in the Authorization header on protected calls.
+Error format
+All error responses follow this structure:
+
+
+{   "error": {
+                "code": "STRING_CONSTANT",
+                "message": "Full text error explaination."   
+} 
+}
+
+________________
+POST /auth/login
+Authenticate a user for a specific survey and get a per-survey JWT.
+Purpose
+   * Verify the user can access the survey.
+   * The logins are in the JSON Body, sent through SSL.
+   * Return a short-lived JWT that authorizes them for that survey.
+   * Tell the client whether they already submitted that survey.
+Request
+
+
+POST /auth/login Content-Type: application/json Accept: application/json
+
+{
+        "username": "username",
+        "password": "password",
+ }
+Fields
+Field
+	Type
+	Required
+	Description
+	username
+	string
+	yes
+	The user identifier used to authenticate.
+	password
+	string
+	yes
+	The user password to authenticate.
+	Successful Response 200 OK
+{   "token": "<jwt_token_here>",
+    "tokenType": "Bearer",
+    "expiresInSeconds": 14400 // 4 hours   
+}
+Response fields
+Field
+	Type
+	Description
+	token
+	string
+	The survey JWT. Must be sent as Authorization: Bearer <token> on subsequent calls for that survey.
+	tokenType
+	string
+	Always "Bearer".
+	expiresInSeconds
+	number
+	TTL of this token in seconds.
+	Error Responses
+
+
+Code
+	Error
+	Message
+	404
+	PATIENT_NOT_FOUND
+	Patient not found.
+	403
+	SURVEY_UNSUBSCRIBED (FORBIDDEN)
+	The patient has unsubscribed and can’t complete the survey.
+	403
+	SURVEY_DEADLINE (FORBIDDEN)
+	The patient has reached the deadline to complete the survey.
+	409
+	SURVEY_ALREADY_COMPLETED
+	The patient has already completed the survey.
+	500
+	INTERNAL_SERVER_ERROR
+	Technical Failure
+	________________
+POST /survey/unsubscribe
+Unsubscribe the user for the survey reminders / notifications.
+Purpose
+   * The patient hit this endpoint to stop all future notifications.
+   * Note: No JWT Token necessary, the survey ID is enough to identify an user.
+Request
+POST /survey/unsubscribe Content-Type: application/json Accept: application/json 
+
+{        
+        "surveyId": "survey_ID"
+}
+
+Fields
+Field
+	Type
+	Required
+	Description
+	surveyId
+	string
+	yes
+	The surveyID unique to each user
+	reason 
+	string
+	yes
+	The patient reason to unsubscribe.
+	Successful Response 200 OK
+{ /* Empty body */ }
+Error Responses
+
+
+Code
+	Error
+	Message
+	404
+	SURVEY_ID_UNKNOWN
+	Survey not found.
+	409
+	ALREADY_UNSUBSCRIBED
+	The Patient has already unsubscribed.
+	500
+	INTERNAL_SERVOR_ERROR
+	Technical failure.
+
+
+From the communication with the production team:
+
+The different cases are:
+When a user try to login and fill the survey for the first time:
+We call the API. Mediakom knows which survey it is about based on the credentials and provide us a token for this survey. We save it in cookies.
+We redirect the user to Mediakom's URL, they redirect him to the right survey.
+The user fill it and complete it. Mediakom has a "success endpage" on their side.
+The same user comes back and try to login again, but he already filled the survey:
+We call the API. Mediakom again, find the survey and tell us that's the user is already completed.
+We don't redirect and display a message to the user.
+The user has two valid tokens and has to fill the both survey, and he tries to login:
+We call the API, we get a refreshed token.
+We redirect to Mediakom and they use the most recent token (I have to confirm that with them)
+

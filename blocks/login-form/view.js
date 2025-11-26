@@ -4,6 +4,7 @@
  * @package IQTIGForms
  */
 
+import { __ } from '@wordpress/i18n';
 import { setFormData, getFormData } from '../../src/utils/cookie-manager';
 import { validateAllFields } from '../../src/utils/validation';
 import {
@@ -130,6 +131,8 @@ document.addEventListener( 'DOMContentLoaded', () => {
 
 			// Collect all field data
 			const formFields = [];
+			const formData = {};
+
 			fields.forEach( ( field ) => {
 				let fieldValue;
 				if ( field.type === 'checkbox' ) {
@@ -154,11 +157,13 @@ document.addEventListener( 'DOMContentLoaded', () => {
 							`[name="${ field.name }"]`
 						);
 						const checkedRadio = Array.from( radioGroup ).find( ( r ) => r.checked );
+						const radioValue = checkedRadio ? checkedRadio.value : '';
 						formFields.push( {
 							name: field.name,
-							value: checkedRadio ? checkedRadio.value : '',
+							value: radioValue,
 							required: isRequired,
 						} );
+						formData[ field.name ] = radioValue;
 					}
 				} else {
 					formFields.push( {
@@ -166,6 +171,7 @@ document.addEventListener( 'DOMContentLoaded', () => {
 						value: fieldValue,
 						required: isRequired,
 					} );
+					formData[ field.name ] = fieldValue;
 				}
 			} );
 
@@ -180,12 +186,60 @@ document.addEventListener( 'DOMContentLoaded', () => {
 			// Clear errors if validation passes
 			clearErrors();
 
-			// Redirect if URL is provided
-			if ( redirectUrl ) {
-				window.location.href = redirectUrl;
-			} else {
-				announceError( 'Form submitted successfully!' );
-			}
+			// Add loading state
+			const submitButton = formElement.querySelector( '.iqtig-forms-submit' );
+			const originalButtonText = submitButton.textContent;
+			submitButton.disabled = true;
+			submitButton.setAttribute( 'aria-busy', 'true' );
+			submitButton.textContent = __( 'Submitting...', 'iqtig-forms' );
+
+			// Announce loading state for screen readers
+			announceError( __( 'Submitting form, please wait...', 'iqtig-forms' ) );
+
+			// Prepare API request data
+			const requestData = {
+				...formData,
+				useGlobalRedirect: formElement.dataset.useGlobalRedirect === 'true',
+				redirectUrl: formElement.dataset.redirectUrl || '',
+			};
+
+			// Submit to API
+			fetch( formElement.dataset.apiUrl + 'iqtig-forms/v1/login', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'X-WP-Nonce': formElement.dataset.nonce,
+				},
+				body: JSON.stringify( requestData ),
+			} )
+				.then( ( response ) => response.json() )
+				.then( ( data ) => {
+					if ( data.success && data.redirect_url ) {
+						// Announce success for screen readers
+						announceError( __( 'Login successful, redirecting...', 'iqtig-forms' ) );
+						// Redirect to the URL provided by the API
+						window.location.href = data.redirect_url;
+					} else {
+						// Handle error response
+						const errorMessage = data.message || __( 'An error occurred during login. Please try again.', 'iqtig-forms' );
+						displayErrors( { general: errorMessage } );
+
+						// Reset button state
+						submitButton.disabled = false;
+						submitButton.setAttribute( 'aria-busy', 'false' );
+						submitButton.textContent = originalButtonText;
+					}
+				} )
+				.catch( ( error ) => {
+					// Handle network or other errors
+					const errorMessage = __( 'Network error. Please check your connection and try again.', 'iqtig-forms' );
+					displayErrors( { general: errorMessage } );
+
+					// Reset button state
+					submitButton.disabled = false;
+					submitButton.setAttribute( 'aria-busy', 'false' );
+					submitButton.textContent = originalButtonText;
+				} );
 		};
 
 		// Submit button click handler

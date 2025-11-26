@@ -1,16 +1,26 @@
 # IQTIG Forms WordPress Plugin
 
 ## Project Overview
-IQTIG Forms is a WordPress plugin providing two customizable Gutenberg blocks (Login Form and Unsubscribe Form) with cookie persistence for external service integration. Forms save user input to cookies and redirect users after validation, enabling seamless handoff to external services on the same domain.
+IQTIG Forms is a WordPress plugin providing two customizable Gutenberg blocks (Login Form and Unsubscribe Form) that integrate with the Mediakom external API. Forms authenticate users, store JWT tokens in cookies, and redirect users to Mediakom surveys.
 
 **Key Features:**
 - Two custom blocks: Login Form and Unsubscribe Form
+- External API integration with Mediakom (proxy through WordPress)
+- JWT token storage in cookies for survey handoff
+- Global settings with per-form override capability
 - Dynamic field management (text, textarea, checkbox, radio, select)
 - Required field validation
-- Cookie-based data persistence (30-day lifespan, site-wide path)
-- Redirect on successful validation (no form submission)
+- Cookie-based data persistence
 - WCAG 2.2 and BITV accessibility compliance
 - Translation-ready (English default, German support)
+
+## External API Integration
+The plugin proxies requests to the Mediakom API:
+- **Base URL:** Configurable in settings (default: `https://api.iqtig.org`)
+- **POST /auth/login** - Authenticate user, receive JWT token
+- **POST /survey/unsubscribe** - Unsubscribe user from survey notifications
+
+See `/documentation/` folder for full API documentation.
 
 ## Tech Stack
 
@@ -53,10 +63,11 @@ iqtig-plugin/
 ├── includes/                     # PHP functionality
 │   ├── activation.php           # Plugin activation
 │   ├── deactivation.php         # Plugin deactivation
-│   ├── blocks.php               # Block registration
+│   ├── blocks.php               # Block registration with render callbacks
 │   ├── assets.php               # Asset enqueuing
 │   ├── cookie-handler.php       # Cookie management
-│   └── ajax-handler.php         # REST API endpoints
+│   ├── ajax-handler.php         # REST API endpoints (API proxy)
+│   └── settings-page.php        # Admin settings page
 │
 ├── src/                          # Shared JavaScript
 │   ├── utils/
@@ -217,12 +228,27 @@ git push origin main
 - External services on same domain can read these cookies
 - Cookie keys include formId to support multiple forms
 
-### Form Submission Flow
-1. User fills fields → Auto-saved to cookies
+### Login Form Flow
+1. User fills username/password and any custom fields → Auto-saved to cookies
 2. User clicks submit → Client-side validation
 3. If invalid → Show accessible errors, focus first error
-4. If valid → Redirect to configured URL (NO server submission)
-5. External service reads cookies from redirect URL
+4. If valid → POST to WordPress REST API `/wp-json/iqtig-forms/v1/login`
+5. WordPress proxies to Mediakom API `/auth/login`
+6. On success: JWT token stored in `iqtig_jwt_token` cookie
+7. User redirected to configured URL (Mediakom reads JWT from cookie)
+
+### Unsubscribe Form Flow
+1. surveyId resolved: URL param → block setting → global setting
+2. User fills reason and any custom fields
+3. User clicks submit → POST to `/wp-json/iqtig-forms/v1/unsubscribe`
+4. WordPress proxies to Mediakom API `/survey/unsubscribe`
+5. User redirected to configured URL
+
+### JWT Token Cookie
+- **Name:** `iqtig_jwt_token`
+- **Expiration:** Configurable (default 4 hours)
+- **Path:** `/` (site-wide for Mediakom access)
+- **HttpOnly:** false (Mediakom JavaScript needs access)
 
 ### Field Types Supported
 - Text field (`<input type="text">`)
@@ -233,12 +259,25 @@ git push origin main
 
 **NOT Supported:** File upload, date pickers, or other advanced fields
 
+### Global Plugin Settings (WP Admin → Settings → IQTIG Forms)
+- **API Base URL** - External API endpoint (default: `https://api.iqtig.org`)
+- **JWT Cookie Lifetime** - Token expiration in seconds (default: 14400 = 4 hours)
+- **Login Redirect URL** - Global default redirect after login
+- **Unsubscribe Redirect URL** - Global default redirect after unsubscribe
+- **Default Survey ID** - Fallback surveyId if not in URL
+- **Use Default Survey ID** - Enable fallback when URL param missing
+
 ### Block Settings
 Each block has settings panel with:
 - **Domain** (string) - Maps to external service domain
-- **ID** (string) - Form identifier for cookie keys
-- **Redirect URL** (string) - Where to send user after validation
+- **Form ID** (string) - Form identifier for cookie keys
+- **Use Global Redirect URL** (toggle) - Use global setting or custom URL
+- **Redirect URL** (string) - Custom redirect (when global toggle is off)
 - **Fields** (array) - Dynamic field configuration
+
+**Unsubscribe Form Additional Settings:**
+- **Survey ID** (string) - Per-block surveyId override
+- **Read Survey ID from URL** (toggle) - Check URL param first
 
 ### Security Considerations
 - All input sanitized with `sanitize_text_field()` or `sanitize_email()`

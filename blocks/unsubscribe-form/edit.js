@@ -17,7 +17,7 @@ import {
 import { createElement, Fragment } from '@wordpress/element';
 
 export default function Edit( { attributes, setAttributes } ) {
-	const { domain, formId, redirectUrl, fields } = attributes;
+	const { domain, formId, redirectUrl, useGlobalRedirect, surveyId, useUrlSurveyId, fields } = attributes;
 	const blockProps = useBlockProps();
 
 	const addField = () => {
@@ -104,12 +104,31 @@ export default function Edit( { attributes, setAttributes } ) {
 					onChange: ( value ) => setAttributes( { formId: value } ),
 					help: __( 'Unique identifier for this form', 'iqtig-forms' ),
 				} ),
+				createElement( ToggleControl, {
+					label: __( 'Use Global Redirect URL', 'iqtig-forms' ),
+					checked: useGlobalRedirect,
+					onChange: ( value ) => setAttributes( { useGlobalRedirect: value } ),
+					help: __( 'When enabled, uses the redirect URL from plugin settings. Disable to set a custom URL for this form.', 'iqtig-forms' ),
+				} ),
+				! useGlobalRedirect &&
+					createElement( TextControl, {
+						label: __( 'Redirect URL', 'iqtig-forms' ),
+						value: redirectUrl,
+						onChange: ( value ) => setAttributes( { redirectUrl: value } ),
+						help: __( 'URL to redirect to after submission', 'iqtig-forms' ),
+						type: 'url',
+					} ),
 				createElement( TextControl, {
-					label: __( 'Redirect URL', 'iqtig-forms' ),
-					value: redirectUrl,
-					onChange: ( value ) => setAttributes( { redirectUrl: value } ),
-					help: __( 'URL to redirect to after submission', 'iqtig-forms' ),
-					type: 'url',
+					label: __( 'Survey ID', 'iqtig-forms' ),
+					value: surveyId,
+					onChange: ( value ) => setAttributes( { surveyId: value } ),
+					help: __( 'Per-form Survey ID. Leave empty to use URL parameter or global setting.', 'iqtig-forms' ),
+				} ),
+				createElement( ToggleControl, {
+					label: __( 'Read Survey ID from URL', 'iqtig-forms' ),
+					checked: useUrlSurveyId,
+					onChange: ( value ) => setAttributes( { useUrlSurveyId: value } ),
+					help: __( 'When enabled, checks URL for surveyId parameter first.', 'iqtig-forms' ),
 				} )
 			)
 		),

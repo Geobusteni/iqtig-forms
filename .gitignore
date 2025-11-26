@@ -44,3 +44,7 @@ yarn.lock
 
 # PHPStan
 .phpstan.cache/
+
+# Claude technical files
+.claude/
+.claudemd
